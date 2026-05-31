@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>The Ross Family Videos</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      background: #111827;
+      color: #e5e7eb;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.5rem 1rem 0.5rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      color: #f9fafb;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      padding: 1.75rem 1.5rem 3rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #1f2937;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .thumb {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #0f172a;
+      overflow: hidden;
+    }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .play-btn {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .card:hover .play-btn { opacity: 1; }
+
+    .card-info {
+      padding: 0.75rem 1rem 0.9rem;
+    }
+
+    .card-info h2 {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #e5e7eb;
+      margin-bottom: 0.4rem;
+      line-height: 1.35;
+    }
+
+    .dl-btn {
+      font-size: 0.75rem;
+      color: #60a5fa;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .dl-btn:hover { text-decoration: underline; }
+
+    /* ── Modal ── */
+    #modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    #modal.open { display: flex; }
+
+    #modal-box {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    #modal-title {
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: #d1d5db;
+      text-align: center;
+      margin-bottom: 0.6rem;
+    }
+
+    #modal-video {
+      width: 100%;
+      max-height: 72vh;
+      border-radius: 6px;
+      background: #000;
+      display: block;
+    }
+
+    #modal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      padding: 0 0.1rem;
+    }
+
+    #modal-dl {
+      font-size: 0.82rem;
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    #modal-dl:hover { text-decoration: underline; }
+
+    #close-btn {
+      background: transparent;
+      border: 1px solid #4b5563;
+      color: #d1d5db;
+      padding: 0.35rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-family: inherit;
+    }
+
+    #close-btn:hover { background: #374151; }
+
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; padding: 1rem 0.75rem 2rem; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>The Ross Family Videos</h1>
+  <p>Private family archive</p>
+</header>
+
+<div class="grid">
+<!-- VIDEO_CARDS -->
+</div>
+
+<div id="modal">
+  <div id="modal-box">
+    <div id="modal-title"></div>
+    <video id="modal-video" controls preload="none"></video>
+    <div id="modal-footer">
+      <a id="modal-dl" href="#">&#8595; Download original</a>
+      <button id="close-btn" onclick="closeModal()">&#10005; Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* VIDEO_DATA */
+
+  function playVideo(i) {
+    const v = VIDEOS[i];
+    document.getElementById('modal-title').textContent = v.title;
+    const vid = document.getElementById('modal-video');
+    vid.poster = v.poster;
+    vid.src = v.src;
+    document.getElementById('modal-dl').href = v.orig;
+    document.getElementById('modal-dl').download = v.title;
+    document.getElementById('modal').classList.add('open');
+    vid.play().catch(() => {});
+  }
+
+  function closeModal() {
+    const vid = document.getElementById('modal-video');
+    vid.pause();
+    vid.src = '';
+    document.getElementById('modal').classList.remove('open');
+  }
+
+  document.getElementById('modal').addEventListener('click', function (e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeModal();
+  });
+</script>
+
+</body>
+</html>

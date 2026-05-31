@@ -1,0 +1,16 @@
+{
+  "name": "family-videos-gallery",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "./build.sh",
+    "transcode": "bash scripts/transcode.sh",
+    "manifest": "node scripts/update-manifest.js",
+    "gallery": "node scripts/build-gallery.js",
+    "upload": "bash scripts/upload-bunny.sh",
+    "encrypt": "bash scripts/encrypt-deploy.sh"
+  },
+  "devDependencies": {
+    "staticrypt": "^3.5.4"
+  }
+}

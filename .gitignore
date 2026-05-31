@@ -1,0 +1,7 @@
+.env
+*.mp4
+*.mov
+*.avi
+*.mkv
+node_modules/
+work/
