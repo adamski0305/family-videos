@@ -22,6 +22,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Switch Pages to Actions build mode
+        run: |
+          curl -s -X PATCH \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            -d '{"build_type":"workflow"}' \
+            "https://api.github.com/repos/${{ github.repository }}/pages" \
+            | grep -E '"build_type"|"message"' || true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/
