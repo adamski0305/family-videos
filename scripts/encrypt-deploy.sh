@@ -10,14 +10,18 @@ mkdir -p docs/posters
 cp work/posters/*.jpg docs/posters/ 2>/dev/null || echo "  (no posters to copy)"
 
 # Encrypt gallery with StatiCrypt
+# staticrypt -o takes a directory; write to a temp dir then move to docs/index.html
+rm -rf work/encrypted
 npx staticrypt work/gallery.html \
-  --password "$FAMILY_PASSPHRASE" \
-  --output docs/index.html \
+  -p "$FAMILY_PASSPHRASE" \
+  --short \
+  -d work/encrypted \
   --template-title "The Ross Family" \
   --template-instructions "Enter the family passphrase to unlock the videos." \
   --template-button "Unlock" \
   --remember 30
 
+mv work/encrypted/gallery.html docs/index.html
 echo "Encrypted gallery written to docs/index.html"
 
 # Commit and push

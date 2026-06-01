@@ -1,58 +1,36 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ -f .env ]; then set -a; source .env; set +a; fi
+SRC="$HOME/Library/Mobile Documents/com~apple~CloudDocs/Personal/Family/Family Videos"
+OUT="$HOME/family-videos/transcoded"
+LOG="$HOME/family-videos/transcode.log"
+mkdir -p "$OUT"
+: > "$LOG"
 
-SOURCE_DIR="${SOURCE_DIR:-/Users/adamrossmini/Library/Mobile Documents/com~apple~CloudDocs/Personal/Family/Family Videos}"
+shopt -s nullglob
+for f in "$SRC"/*.mp4; do
+  name="$(basename "$f")"
+  out="$OUT/$(echo "${name%.*}" | tr '[:upper:] ' '[:lower:]-' | tr -cd '[:alnum:]-').mp4"
 
-mkdir -p work/transcoded work/posters
+  if [[ -f "$out" ]]; then
+    echo "SKIP (already done): $name"
+    continue
+  fi
 
-# Derive a URL-safe slug from a filename
-slugify() {
-  local name="${1%.*}"                          # strip extension
-  name=$(echo "$name" | sed 's/^[0-9]*[. ]*//')  # strip leading "10. " / "5."
-  name=$(echo "$name" | tr '[:upper:]' '[:lower:]')
-  name=$(echo "$name" | sed 's/[^a-z0-9]/-/g')   # non-alnum → hyphen
-  name=$(echo "$name" | sed 's/-\{2,\}/-/g')     # collapse hyphens
-  name=$(echo "$name" | sed 's/^-//;s/-$//')     # trim hyphens
-  echo "$name"
-}
+  echo "----------------------------------------"
+  echo "ENCODING: $name"
+  echo "----------------------------------------"
 
-found=0
-while IFS= read -r -d '' src; do
-  filename=$(basename "$src")
-  slug=$(slugify "$filename")
-
-  out_mp4="work/transcoded/${slug}.mp4"
-  out_poster="work/posters/${slug}.jpg"
-
-  if [ -f "$out_mp4" ]; then
-    echo "  [skip]      $filename  (already transcoded)"
-  else
-    echo "  [transcode] $filename → ${slug}.mp4"
-    ffmpeg -i "$src" \
-      -c:v libx264 -preset medium -crf 21 \
-      -c:a aac -b:a 128k \
+  if ffmpeg -y -i "$f" \
+      -vf "yadif=mode=1,format=yuv420p" \
+      -c:v h264_videotoolbox -b:v 4000k \
+      -c:a aac -b:a 160k \
       -movflags +faststart \
-      -pix_fmt yuv420p \
-      -vf "scale=-2:720" \
-      -y "$out_mp4" \
-      2>&1 | grep -E "^(frame|error|Error)" | tail -3 || true
-  fi
-
-  if [ -f "$out_poster" ]; then
-    echo "  [skip]      poster exists: ${slug}.jpg"
+      "$out" 2>>"$LOG"; then
+    echo "OK: $name -> $(basename "$out")"
   else
-    echo "  [poster]    $filename → ${slug}.jpg"
-    ffmpeg -ss 00:00:03 -i "$src" \
-      -frames:v 1 \
-      -vf "scale=1280:-2" \
-      -q:v 3 \
-      -y "$out_poster" \
-      2>&1 | grep -E "^(frame|error|Error)" | tail -1 || true
+    echo "FAILED: $name  (see $LOG)"
   fi
+done
 
-  found=$((found + 1))
-done < <(find "$SOURCE_DIR" -maxdepth 1 \( -iname "*.mp4" -o -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" \) -print0 | sort -z)
-
-echo "Transcoding complete. Processed ${found} source file(s)."
+echo "Done. Full ffmpeg log at: $LOG"

@@ -7,7 +7,7 @@ if [ -f .env ]; then set -a; source .env; set +a; fi
 : "${BUNNY_STORAGE_ZONE_PASSWORD:?Set BUNNY_STORAGE_ZONE_PASSWORD in .env}"
 
 SOURCE_DIR="${SOURCE_DIR:-/Users/adamrossmini/Library/Mobile Documents/com~apple~CloudDocs/Personal/Family/Family Videos}"
-BASE="https://storage.bunnycdn.com/${BUNNY_STORAGE_ZONE_NAME}"
+BASE="https://sg.storage.bunnycdn.com/${BUNNY_STORAGE_ZONE_NAME}"
 
 bunny_put() {
   local local_file="$1"
@@ -17,7 +17,7 @@ bunny_put() {
     -X PUT \
     -H "AccessKey: ${BUNNY_STORAGE_ZONE_PASSWORD}" \
     -H "Content-Type: application/octet-stream" \
-    --data-binary "@${local_file}" \
+    --upload-file "${local_file}" \
     "${BASE}/${remote_path}")
   if [ "$code" = "201" ] || [ "$code" = "200" ]; then
     echo "  [ok $code] $remote_path"
@@ -28,7 +28,7 @@ bunny_put() {
 }
 
 echo "Uploading transcoded MP4s..."
-for f in work/transcoded/*.mp4; do
+for f in transcoded/*.mp4; do
   [ -f "$f" ] || continue
   bunny_put "$f" "$(basename "$f")"
 done

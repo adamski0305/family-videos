@@ -5,3 +5,7 @@
 *.mkv
 node_modules/
 work/
+transcode.log
+encrypted/
+transcoded
+.staticrypt.json
